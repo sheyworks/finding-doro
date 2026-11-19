@@ -19,10 +19,28 @@ public class WeaponController : MonoBehaviour
 
     private void Update()
     {
+        DrawAimDebug();
+
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             Shoot();
         }
+    }
+
+    private void DrawAimDebug()
+    {
+        if (firePoint == null) return;
+
+        ResolveAimReferences();
+        if (aimCamera == null) return;
+
+        Ray aimRay = aimCamera.ScreenPointToRay(GetCrosshairScreenPoint());
+        Debug.DrawRay(aimRay.origin, aimRay.direction * maxAimDistance, Color.yellow);
+
+        Vector3 direction = GetAimPoint(aimRay) - firePoint.position;
+        if (direction.sqrMagnitude < 0.0001f) direction = aimRay.direction;
+        direction.Normalize();
+        Debug.DrawRay(firePoint.position, direction * maxAimDistance, Color.red);
     }
 
     private void Shoot()
@@ -34,6 +52,7 @@ public class WeaponController : MonoBehaviour
 
         Vector2 screenPoint = GetCrosshairScreenPoint();
         Ray aimRay = aimCamera.ScreenPointToRay(screenPoint);
+        Debug.DrawRay(aimRay.origin, aimRay.direction * maxAimDistance, Color.yellow);
         Vector3 aimPoint = GetAimPoint(aimRay);
         Vector3 direction = aimPoint - firePoint.position;
         if (direction.sqrMagnitude < 0.0001f)
@@ -41,6 +60,7 @@ public class WeaponController : MonoBehaviour
             direction = aimRay.direction;
         }
         direction.Normalize();
+        Debug.DrawRay(firePoint.position, direction * maxAimDistance, Color.red);
 
         Quaternion bulletRotation = Quaternion.FromToRotation(firePoint.up, direction) * firePoint.rotation;
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, bulletRotation);
